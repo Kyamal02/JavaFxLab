@@ -1,6 +1,8 @@
 package guessapp;
 
 import java.util.Random;
+
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -9,6 +11,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+
 
 public class GuessLogic {
     // Переменные для диапазона и логики игры
@@ -31,15 +34,18 @@ public class GuessLogic {
     private GuessOptions gow;
 
     public GuessLogic(Stage s) {
+        //задание(0)
+        s.setResizable(false); // Запрещаем изменение размеров окна
+
         stg = s; // Сохраняем главное окно
         // Устанавливаем диапазон и создаем генератор случайных чисел
         lowBound = 1;
         highBound = 100;
         rnd = new Random();
-
         generateNumber(); // Генерируем случайное число
         formScene(); // Создаем и настраиваем интерфейс игры
     }
+
 
     void formScene() {
         // Инициализируем объект GuessOptions, передаем Stage и текущий объект GuessLogic
@@ -56,6 +62,17 @@ public class GuessLogic {
 
         // Создаем текстовое поле для ввода числа
         txtNumber = new TextField("Введите число");
+        // задание(1) установили максимальный размер поля
+        txtNumber.setMaxWidth(150);
+
+        //задание(1) при нажатии мышкой удаляет текст
+        txtNumber.setOnMouseClicked(e -> txtNumber.clear());
+        //задание(1) при запуске сразу фокусируется на поле и выделяет текст
+        Platform.runLater(() -> {
+            txtNumber.requestFocus();
+            txtNumber.selectAll();
+        });
+
 
         // Создаем кнопку "Принять значение" и назначаем ей действие при нажатии
         btnAccept = new Button("Принять значение");
@@ -67,12 +84,22 @@ public class GuessLogic {
 
         // Создаем кнопку "Настройки" для перехода к окну настроек
         btnOptions = new Button("Настройки");
-        btnOptions.setOnAction(eh -> stg.setScene(gow.getScene())); // Открываем сцену настроек
+        //задание(1) при смене сцены вызываем у объекта gow setFocusOnLeftBound
+        btnOptions.setOnAction(eh -> {
+            stg.setScene(gow.getScene()); // Переход на сцену настроек
+            //задание(1) чтобы при переключении в настройки был фокус на левое поле
+            gow.setFocusOnLeftBound();
+        });
+
 
         // Создаем кнопку "Новая игра" для начала новой игры
         btnNewGame = new Button("Новая игра");
         btnNewGame.setOnAction(eh -> {
             generateNumber(); // Генерируем новое случайное число
+            //задание(1) при начале новой игры добавляем текст, чтобы убрать прошлый ввод(в задании нет, но так красивее)
+            txtNumber.setText("Введите число");
+            //задание(1) при нажатии на кнопку "Новая игра" сразу выделяет текст и готово к вводу
+            txtNumber.requestFocus();
             lblResult.setText("Начинаем игру!"); // Обновляем сообщение
         });
 
@@ -80,11 +107,12 @@ public class GuessLogic {
         vb.getChildren().addAll(btnNewGame, lblBounds, txtNumber, btnAccept, lblResult, btnOptions);
 
         // Создаем сцену с VBox и устанавливаем ее на главное окно Stage
-        sgl = new Scene(vb, 300, 400);
+        sgl = new Scene(vb, 400, 500);
         stg.setScene(sgl);
         stg.setTitle("Угадай число"); // Устанавливаем заголовок окна
         stg.show(); // Отображаем окно
     }
+
 
     public void generateNumber() {
         // Генерируем случайное число от lowBound до highBound
@@ -114,5 +142,12 @@ public class GuessLogic {
         lblBounds.setText("Загадано число от " + lowBound + " до " + highBound);
         generateNumber(); // Генерируем новое число в новом диапазоне
         lblResult.setText("Начинаем игру!"); // Обновляем сообщение
+    }
+    //задание(1) метод для переключения фокуса
+    public void returnFocusToGuessField() {
+        Platform.runLater(() -> {
+            txtNumber.requestFocus();
+            txtNumber.selectAll();
+        });
     }
 }

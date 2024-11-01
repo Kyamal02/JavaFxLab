@@ -1,5 +1,6 @@
 package guessapp;
 
+import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -52,7 +53,17 @@ public class GuessOptions {
         hbTextFields.setAlignment(Pos.CENTER);
         tfLeftBound = new TextField("Введите левую границу");
         tfRightBound = new TextField("Введите правую границу");
+        //задание(1) задаем предпочтительную ширину
+        tfLeftBound.setPrefWidth(155);
+        tfRightBound.setPrefWidth(155);
         hbTextFields.getChildren().addAll(tfLeftBound, tfRightBound);
+
+        //задание(1) при открытии настроек ждем всю отрисовку, ставим фокус
+        // на левое поле и выделяем текст, который там есть
+        Platform.runLater(() -> {
+            tfLeftBound.requestFocus();
+            tfLeftBound.selectAll();
+        });
 
         // При клике на текстовые поля весь текст выделяется
         tfLeftBound.setOnMousePressed(eh -> tfLeftBound.selectAll());
@@ -63,13 +74,15 @@ public class GuessOptions {
         btnSetOptions.setOnAction(eh -> {
             setLoHiBnds(); // Устанавливаем новые значения диапазона
             sto.setScene(glb.getScene()); // Переключаемся обратно на сцену игры
+            //задание(1) чтобы при переключении обратно был фокус на поле
+            glb.returnFocusToGuessField();
         });
 
         // Добавляем в главный контейнер VBox все созданные элементы
         vbAll.getChildren().addAll(hbLabels, hbTextFields, btnSetOptions);
 
         // Создаем сцену для окна настроек и задаем размер
-        sgo = new Scene(vbAll, 300, 400);
+        sgo = new Scene(vbAll, 400, 500);
     }
 
     public Scene getScene() {
@@ -84,5 +97,12 @@ public class GuessOptions {
 
         // Устанавливаем новые границы диапазона через метод setLowHighBound из GuessLogic
         glb.setLowHighBound(lb, hb);
+    }
+    //задание(1) метод для переключения фокуса
+    public void setFocusOnLeftBound() {
+        Platform.runLater(() -> {
+            tfLeftBound.requestFocus();
+            tfLeftBound.selectAll();
+        });
     }
 }

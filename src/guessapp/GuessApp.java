@@ -14,5 +14,6 @@ public class GuessApp extends Application {
         // Создаем объект класса GuessLogic и передаем ему объект Stage (главное окно)
         // GuessLogic будет управлять логикой игры и интерфейсом
         GuessLogic glw = new GuessLogic(stage);
+
     }
 }
