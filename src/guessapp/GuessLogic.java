@@ -17,6 +17,11 @@ public class GuessLogic {
     // Переменные для диапазона и логики игры
     private int lowBound, highBound, guessNum, probNum;
 
+    //задание(3) переменные для отслеживания попыток
+    private int maxAttempts = 0; // 0 означает бесконечные попытки
+    private int currentAttempts = 0; // Счётчик попыток
+    private Label lblAttempts; // задание(3) метка для отображения оставшихся попыток
+
     // Сцена и контейнер для интерфейса
     private Scene sgl;
     private VBox vb;
@@ -60,6 +65,9 @@ public class GuessLogic {
         lblBounds = new Label("Загадано число от " + lowBound + " до " + highBound);
         lblResult = new Label("Игра еще не началась");
 
+        // задание(3) инициализация метки для попыток
+        lblAttempts = new Label("Осталось попыток: бесконечность");
+
         // Создаем текстовое поле для ввода числа
         txtNumber = new TextField("Введите число");
         // задание(1) установили максимальный размер поля
@@ -77,13 +85,27 @@ public class GuessLogic {
         // Создаем кнопку "Принять значение" и назначаем ей действие при нажатии
         btnAccept = new Button("Принять значение");
         btnAccept.setOnAction(eh -> {
-            //задание(2) Проверяем, что введено целое число, иначе в текстовом поле
-            // информируем пользователя о том, что нужно ввести целое число
             try {
-                probNum = Integer.parseInt(txtNumber.getText()); // Пробуем преобразовать в целое число
-                checkNumber(); // Если ввод корректен, проверяем, угадано ли число
+                probNum = Integer.parseInt(txtNumber.getText()); // Преобразование в число
+
+                //задание(3)Проверка, что введенное число в диапазоне
+                if (probNum < lowBound || probNum > highBound) {
+                    lblResult.setText("Введите число в диапазоне от " + lowBound + " до " + highBound);
+                    txtNumber.setText(""); // Очищаем поле для нового ввода
+                    return; // Выходим из обработчика, чтобы не увеличивать счетчик попыток
+                }
+
+                //задание(3)Если число в диапазоне, продолжаем проверку как обычно
+                currentAttempts++; // Увеличение счётчика попыток
+                updateAttemptsLabel(); // задание(3) обновляем метку оставшихся попыток
+                checkNumber();
+
+                //задание(3)Проверка на исчерпание попыток
+                if (maxAttempts > 0 && currentAttempts >= maxAttempts) {
+                    btnAccept.setDisable(true); // Отключение кнопки при исчерпании попыток
+                    lblResult.setText("Попытки закончились! Число не угадано.");
+                }
             } catch (NumberFormatException e) {
-                // Если введено некорректное значение (не целое число), выводим сообщение об ошибке
                 txtNumber.setText("Введите целое число");
             }
         });
@@ -101,16 +123,20 @@ public class GuessLogic {
         // Создаем кнопку "Новая игра" для начала новой игры
         btnNewGame = new Button("Новая игра");
         btnNewGame.setOnAction(eh -> {
+
             generateNumber(); // Генерируем новое случайное число
             //задание(1) при начале новой игры добавляем текст, чтобы убрать прошлый ввод(в задании нет, но так красивее)
             txtNumber.setText("Введите число");
             //задание(1) при нажатии на кнопку "Новая игра" сразу выделяет текст и готово к вводу
             txtNumber.requestFocus();
+            currentAttempts = 0; // Сбрасываем счётчик попыток для новой игры
+            updateAttemptsLabel(); // задание(3) обновление метки при новой игре
+            btnAccept.setDisable(false); // Включаем кнопку, если она была отключена
             lblResult.setText("Начинаем игру!"); // Обновляем сообщение
         });
 
         // Добавляем все элементы в VBox, чтобы они располагались вертикально
-        vb.getChildren().addAll(btnNewGame, lblBounds, txtNumber, btnAccept, lblResult, btnOptions);
+        vb.getChildren().addAll(btnNewGame, lblBounds, txtNumber, btnAccept, lblResult, lblAttempts, btnOptions);
 
         // Создаем сцену с VBox и устанавливаем ее на главное окно Stage
         sgl = new Scene(vb, 400, 500);
@@ -132,7 +158,9 @@ public class GuessLogic {
         } else if (probNum < guessNum) {
             lblResult.setText("Загаданное число больше"); // Число меньше загаданного
         } else {
-            lblResult.setText("Вы угадали число!"); // Игрок угадал число
+            lblResult.setText("Вы угадали число! Попыток: " + currentAttempts); // Игрок угадал число
+            //задание(3)
+            btnAccept.setDisable(true); // Отключаем кнопку, так как игра завершена
         }
     }
 
@@ -149,6 +177,7 @@ public class GuessLogic {
         generateNumber(); // Генерируем новое число в новом диапазоне
         lblResult.setText("Начинаем игру!"); // Обновляем сообщение
     }
+
     //задание(1) метод для переключения фокуса
     public void returnFocusToGuessField() {
         Platform.runLater(() -> {
@@ -156,4 +185,22 @@ public class GuessLogic {
             txtNumber.selectAll();
         });
     }
+
+    //задание(3) метод для установки максимального количества попыток
+    public void setMaxAttempts(int maxAttempts) {
+        this.maxAttempts = maxAttempts;
+        currentAttempts = 0; // Сброс счётчика при обновлении
+        updateAttemptsLabel(); // задание(3) обновляем метку при установке новых попыток
+        //задание(3)
+        btnAccept.setDisable(false);
+    }
+
+    private void updateAttemptsLabel() { // задание(3) обновляем текст метки попыток
+        if (maxAttempts > 0) {
+            lblAttempts.setText("Осталось попыток: " + (maxAttempts - currentAttempts));
+        } else {
+            lblAttempts.setText("Осталось попыток: бесконечность");
+        }
+    }
+
 }

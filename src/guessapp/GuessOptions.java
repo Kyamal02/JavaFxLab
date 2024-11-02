@@ -11,6 +11,9 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class GuessOptions {
+    //задание(3)
+    private Label tfMaxAttemptsLabel; // текст, который будет выше tfMaxAttempts
+    private TextField tfMaxAttempts; // Поле для ввода максимума попыток
 
     // Главный контейнер VBox и контейнеры HBox для меток и полей ввода
     private VBox vbAll;
@@ -56,7 +59,18 @@ public class GuessOptions {
         //задание(1) задаем предпочтительную ширину
         tfLeftBound.setPrefWidth(155);
         tfRightBound.setPrefWidth(155);
+
+
         hbTextFields.getChildren().addAll(tfLeftBound, tfRightBound);
+        //задание(3)
+        tfMaxAttemptsLabel = new Label("Максимальное количество попыток (0 бесконечность)");
+        //задание(3) добавление текстового поля для того,
+        //чтобы можно было задать максимальное количество попыток
+        tfMaxAttempts = new TextField("0");
+        tfMaxAttempts.setMaxWidth(155); // Задание ширины
+
+        //задание(3) при нажатии мыши все выделяем
+        tfMaxAttempts.setOnMousePressed(eh -> tfMaxAttempts.selectAll());
 
         //задание(1) при открытии настроек ждем всю отрисовку, ставим фокус
         // на левое поле и выделяем текст, который там есть
@@ -76,7 +90,7 @@ public class GuessOptions {
         });
 
         // Добавляем в главный контейнер VBox все созданные элементы
-        vbAll.getChildren().addAll(hbLabels, hbTextFields, btnSetOptions);
+        vbAll.getChildren().addAll(hbLabels, hbTextFields, tfMaxAttemptsLabel, tfMaxAttempts, btnSetOptions);
 
         // Создаем сцену для окна настроек и задаем размер
         sgo = new Scene(vbAll, 400, 500);
@@ -92,6 +106,8 @@ public class GuessOptions {
             // Пробуем преобразовать значения левой и правой границ в целые числа
             int lb = Integer.parseInt(tfLeftBound.getText());
             int hb = Integer.parseInt(tfRightBound.getText());
+            // задание(3) Пробуем преобразовать значение maxAttempts в целое число
+            int maxAttempts = Integer.parseInt(tfMaxAttempts.getText());
 
             // Проверяем, что левая граница меньше правой
             if (lb >= hb) {
@@ -100,19 +116,26 @@ public class GuessOptions {
             } else {
                 // Устанавливаем новые границы диапазона только при корректном вводе
                 glb.setLowHighBound(lb, hb);
-                //задание(2) переместили методы сюда, чтобы переключалось только когда нет ошибок
+                // задание(3) вызываем метод из класса GuessLogic, чтобы установить ограничение
+                glb.setMaxAttempts(Math.max(0, maxAttempts)); // Установка ограничений на попытки
+                // задание(2) переместили методы сюда, чтобы переключалось только когда нет ошибок
                 sto.setScene(glb.getScene()); // Переход обратно на основную сцену
-                //задание(1) чтобы при переключении обратно был фокус на поле
+                // задание(1) чтобы при переключении обратно был фокус на поле
                 glb.returnFocusToGuessField();
             }
         } catch (NumberFormatException e) {
-            // Если введены некорректные значения, информируем пользователя об ошибке
-            tfLeftBound.setText("Введите целое");
-            tfRightBound.setText("Введите целое");
+            // задание(3) Проверка на некорректные значения в каждом поле
+            if (!isInteger(tfLeftBound.getText())) {
+                tfLeftBound.setText("Введите целое");
+            }
+            if (!isInteger(tfRightBound.getText())) {
+                tfRightBound.setText("Введите целое");
+            }
+            if (!isInteger(tfMaxAttempts.getText())) {
+                tfMaxAttempts.setText("Введите целое");
+            }
         }
     }
-
-
 
     //задание(1) метод для переключения фокуса
     public void setFocusOnLeftBound() {
@@ -121,4 +144,15 @@ public class GuessOptions {
             tfLeftBound.selectAll();
         });
     }
+
+    //задание(3) Метод для проверки, является ли строка целым числом
+    private boolean isInteger(String str) {
+        try {
+            Integer.parseInt(str);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
 }
