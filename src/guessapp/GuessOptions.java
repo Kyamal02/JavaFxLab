@@ -73,9 +73,6 @@ public class GuessOptions {
         btnSetOptions = new Button("Установить значения");
         btnSetOptions.setOnAction(eh -> {
             setLoHiBnds(); // Устанавливаем новые значения диапазона
-            sto.setScene(glb.getScene()); // Переключаемся обратно на сцену игры
-            //задание(1) чтобы при переключении обратно был фокус на поле
-            glb.returnFocusToGuessField();
         });
 
         // Добавляем в главный контейнер VBox все созданные элементы
@@ -91,13 +88,32 @@ public class GuessOptions {
     }
 
     private void setLoHiBnds() {
-        // Получаем значения из текстовых полей и преобразуем их в целые числа
-        int lb = Integer.parseInt(tfLeftBound.getText());
-        int hb = Integer.parseInt(tfRightBound.getText());
+        try {
+            // Пробуем преобразовать значения левой и правой границ в целые числа
+            int lb = Integer.parseInt(tfLeftBound.getText());
+            int hb = Integer.parseInt(tfRightBound.getText());
 
-        // Устанавливаем новые границы диапазона через метод setLowHighBound из GuessLogic
-        glb.setLowHighBound(lb, hb);
+            // Проверяем, что левая граница меньше правой
+            if (lb >= hb) {
+                tfLeftBound.setText("Левая < правая");
+                tfRightBound.setText("Левая < правая");
+            } else {
+                // Устанавливаем новые границы диапазона только при корректном вводе
+                glb.setLowHighBound(lb, hb);
+                //задание(2) переместили методы сюда, чтобы переключалось только когда нет ошибок
+                sto.setScene(glb.getScene()); // Переход обратно на основную сцену
+                //задание(1) чтобы при переключении обратно был фокус на поле
+                glb.returnFocusToGuessField();
+            }
+        } catch (NumberFormatException e) {
+            // Если введены некорректные значения, информируем пользователя об ошибке
+            tfLeftBound.setText("Введите целое");
+            tfRightBound.setText("Введите целое");
+        }
     }
+
+
+
     //задание(1) метод для переключения фокуса
     public void setFocusOnLeftBound() {
         Platform.runLater(() -> {
