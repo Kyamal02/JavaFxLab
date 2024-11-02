@@ -1,5 +1,9 @@
 package guessapp;
 
+import java.io.BufferedReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Random;
 
 import javafx.application.Platform;
@@ -37,6 +41,11 @@ public class GuessLogic {
     // Объект GuessOptions для окна настроек
     private GuessOptions gow; // объект для управления настройками игры
 
+    // Задание(4): переменная для логирования
+    private boolean loggingEnabled = false; // флаг для включения/отключения логирования
+    // Задание(4): константа для имени лог-файла
+    private static final String LOG_FILE_NAME = "src/guessapp/LogGuess.txt"; // имя лог-файла
+
     // Конструктор класса GuessLogic
     public GuessLogic(Stage s) {
         // задание(0)
@@ -45,8 +54,8 @@ public class GuessLogic {
         lowBound = 1; // устанавливаем нижнюю границу диапазона
         highBound = 100; // устанавливаем верхнюю границу диапазона
         rnd = new Random(); // инициализируем генератор случайных чисел
-        generateNumber(); // генерируем случайное число в установленном диапазоне
         formScene(); // создаем и настраиваем интерфейс игры
+        initializeGame(); // инициализируем игру
     }
 
     // Метод для создания и настройки элементов интерфейса
@@ -58,9 +67,9 @@ public class GuessLogic {
         vb.setPadding(new Insets(10)); // Добавляем отступы по краям
 
         // Создаем метки и текстовые поля
-        lblBounds = new Label("Загадано число от " + lowBound + " до " + highBound); // отображение текущего диапазона
+        lblBounds = new Label(); // метка для отображения диапазона будет обновлена при инициализации
         lblResult = new Label("Игра еще не началась"); // отображение сообщения о начале игры
-        lblAttempts = new Label("Осталось попыток: бесконечность"); // задание(3) метка для отображения оставшихся попыток
+        lblAttempts = new Label(); // задание(3) метка для отображения оставшихся попыток будет обновлена при инициализации
 
         txtNumber = new TextField("Введите число");
         txtNumber.setMaxWidth(150);
@@ -97,48 +106,96 @@ public class GuessLogic {
         stg.show(); // отображаем окно
     }
 
+    // Метод для инициализации игры (используется при запуске и изменении настроек)
+    private void initializeGame() {
+        generateNumber(); // генерируем новое случайное число
+        currentAttempts = 0; // сбрасываем счётчик попыток
+        updateAttemptsLabel(); // обновляем метку для оставшихся попыток
+        lblBounds.setText("Загадано число от " + lowBound + " до " + highBound); // обновляем метку диапазона
+        lblResult.setText("Начинаем игру!"); // обновляем сообщение
+        txtNumber.setText("Введите число"); // очищаем поле ввода
+        btnAccept.setDisable(false); // включаем кнопку ввода
+        txtNumber.requestFocus(); // ставим фокус на поле ввода
+
+        // Логируем начало новой игры
+        if (loggingEnabled) {
+            String logMessage = "Новая игра. Диапазон: от " + lowBound + " до " + highBound + ". Максимальное количество попыток: " +
+                    (maxAttempts > 0 ? maxAttempts : "бесконечность");
+            writeLog(logMessage);
+        }
+    }
+
     // Метод для обработки попытки угадать число
     private void handleGuess() {
         try {
-            probNum = Integer.parseInt(txtNumber.getText()); // пробуем преобразовать введенное значение в целое число
+            probNum = Integer.parseInt(txtNumber.getText().trim()); // пробуем преобразовать введенное значение в целое число
 
             // задание(3) проверка, что введенное число находится в диапазоне
             if (isOutOfRange(probNum)) { // проверка на соответствие диапазону
                 lblResult.setText("Введите число в диапазоне от " + lowBound + " до " + highBound);
                 txtNumber.setText(""); // очищаем поле для ввода нового значения
+
+                // Логируем выход за пределы диапазона
+                if (loggingEnabled) {
+                    writeLog("Введено число вне диапазона: " + probNum);
+                }
+
                 return; // выходим из обработчика, чтобы не увеличивать счётчик попыток
             }
 
             // задание(3) если число в диапазоне, продолжаем проверку
             currentAttempts++; // увеличиваем счётчик попыток
             updateAttemptsLabel(); // обновляем метку для оставшихся попыток
-            checkNumber(); // проверяем введенное значение на совпадение с загаданным
+            String verdict = checkNumber(); // проверяем введенное значение на совпадение с загаданным
+
+            // Задание(4): логируем попытку
+            if (loggingEnabled) {
+                int remainingAttempts = (maxAttempts > 0) ? (maxAttempts - currentAttempts) : -1;
+                String logMessage = "Попытка " + currentAttempts + ": введено " + probNum + ", вердикт: " + verdict + ", осталось попыток: " + (remainingAttempts >= 0 ? remainingAttempts : "бесконечность");
+                writeLog(logMessage);
+            }
 
             // задание(3) проверка на исчерпание попыток
-            if (maxAttempts > 0 && currentAttempts >= maxAttempts) { // если количество попыток достигло предела
+            if (maxAttempts > 0 && currentAttempts >= maxAttempts) { // если количество попыток достигло предела и число не угадано
                 btnAccept.setDisable(true); // отключаем кнопку после исчерпания попыток
                 lblResult.setText("Попытки закончились! Число не угадано."); // отображаем сообщение об окончании попыток
+
+                // Задание(4): логируем окончание игры
+                if (loggingEnabled) {
+                    writeLog("Попытки закончились. Число не угадано.");
+                }
             }
         } catch (NumberFormatException e) { // если введенное значение не является числом
             txtNumber.setText("Введите целое число"); // выводим сообщение об ошибке
+            lblResult.setText("Некорректный ввод!");
+
+            // Логируем некорректный ввод
+            if (loggingEnabled) {
+                writeLog("Некорректный ввод: " + txtNumber.getText().trim());
+            }
         }
     }
 
-    // Метод для начала новой игры
+    // Метод для начала новой игры по нажатию кнопки "Новая игра"
     private void startNewGame() {
         // Проверяем, были ли попытки в предыдущей игре
         if (currentAttempts > 0) {
             lblResult.setText("Вы прервали игру после " + currentAttempts + " попыток.");
+
+            // Задание(4): логируем прерывание игры
+            if (loggingEnabled) {
+                writeLog("Игра прервана после " + currentAttempts + " попыток.");
+            }
         } else {
             lblResult.setText("Начинаем новую игру!");
+
+            // Задание(4): логируем начало новой игры
+            if (loggingEnabled) {
+                writeLog("Игра начата заново.");
+            }
         }
 
-        generateNumber(); // Генерируем новое случайное число
-        txtNumber.setText("Введите число"); // Подсказка для ввода нового числа
-        txtNumber.requestFocus(); // Устанавливаем фокус на поле ввода
-        currentAttempts = 0; // Сбрасываем счётчик попыток
-        updateAttemptsLabel(); // Обновляем метку для оставшихся попыток
-        btnAccept.setDisable(false); // Включаем кнопку для нового ввода
+        initializeGame(); // Инициализируем игру
     }
 
     // Проверка, что введенное число находится в диапазоне
@@ -152,16 +209,27 @@ public class GuessLogic {
     }
 
     // Метод для проверки введенного числа
-    void checkNumber() {
+    String checkNumber() {
+        String verdict;
+
         // Сравниваем введенное число probNum с загаданным guessNum
         if (probNum > guessNum) {
-            lblResult.setText("Загаданное число меньше"); // сообщение, если введенное число больше загаданного
+            verdict = "Загаданное число меньше"; // сообщение, если введенное число больше загаданного
+            lblResult.setText(verdict);
         } else if (probNum < guessNum) {
-            lblResult.setText("Загаданное число больше"); // сообщение, если введенное число меньше загаданного
+            verdict = "Загаданное число больше"; // сообщение, если введенное число меньше загаданного
+            lblResult.setText(verdict);
         } else {
-            lblResult.setText("Вы угадали число! Попыток: " + currentAttempts); // сообщение, если число угадано
+            verdict = "Вы угадали число! Попыток: " + currentAttempts; // сообщение, если число угадано
+            lblResult.setText(verdict);
             btnAccept.setDisable(true); // отключаем кнопку после успешного угадывания
+
+            // Задание(4): логируем успешное угадывание
+            if (loggingEnabled) {
+                writeLog("Число угадано за " + currentAttempts + " попыток.");
+            }
         }
+        return verdict; // возвращаем вердикт для логирования
     }
 
     // Метод для возвращения сцены игры
@@ -174,9 +242,7 @@ public class GuessLogic {
     public void setLowHighBound(int valLB, int valHB) {
         lowBound = valLB; // установка новой левой границы диапазона
         highBound = valHB; // установка новой правой границы диапазона
-        lblBounds.setText("Загадано число от " + lowBound + " до " + highBound); // обновление метки диапазона
-        generateNumber(); // генерируем новое число в обновленном диапазоне
-        lblResult.setText("Начинаем игру!"); // обновляем сообщение
+        initializeGame(); // Инициализируем игру с новыми настройками
     }
 
     // задание(1) метод для переключения фокуса
@@ -204,5 +270,41 @@ public class GuessLogic {
         }
     }
 
+    // Задание(4): Метод для установки флага логирования
+    public void setLoggingEnabled(boolean enabled) {
+        if (enabled) {
+            loggingEnabled = enabled;
+            writeLog("Логирование включено.");
+        } else {
+            writeLog("Логирование отключено.");
+            loggingEnabled = enabled; // Затем отключаем
+        }
+        loggingEnabled = enabled; // Устанавливаем логирование в конечное значение
+    }
 
+    // Задание(4): Метод для очистки лог-файла
+    public void clearLogFile() {
+        try {
+            // PrintWriter по умолчанию перезаписывает
+            PrintWriter writer = new PrintWriter(new FileWriter(LOG_FILE_NAME));
+            writer.print(""); // очищаем содержимое файла
+            writer.close();
+        } catch (IOException e) {
+            System.out.println("Ошибка при очистке лог-файла: " + e.getMessage());
+        }
+    }
+
+    // Задание(4): Метод для записи в лог-файл
+    private void writeLog(String message) {
+        if (loggingEnabled) {
+            try {
+                // открываем файл в режиме добавления
+                PrintWriter writer = new PrintWriter(new FileWriter(LOG_FILE_NAME, true));
+                writer.println(message);
+                writer.close();
+            } catch (IOException e) {
+                System.out.println("Ошибка при записи в лог-файл: " + e.getMessage());
+            }
+        }
+    }
 }

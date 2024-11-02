@@ -4,6 +4,7 @@ import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
@@ -17,7 +18,7 @@ public class GuessOptions {
 
     // Главный контейнер VBox и контейнеры HBox для меток и полей ввода
     private VBox vbAll; // основной вертикальный контейнер
-    private HBox hbLabels, hbTextFields; // горизонтальные контейнеры для меток и полей ввода
+    private HBox hbLabels, hbTextFields, logHbox; // горизонтальные контейнеры для меток и полей ввода
 
     // Метки и текстовые поля для ввода границ диапазона
     private Label lblLeftBound, lblRightBound; // метки для полей ввода границ диапазона
@@ -25,6 +26,10 @@ public class GuessOptions {
 
     // Кнопка для установки новых значений диапазона
     private Button btnSetOptions; // кнопка для подтверждения установленных значений
+
+    // Задание(4): Переменные для функциональности логирования
+    private CheckBox cbLoggingEnabled; // CheckBox для включения/выключения логирования
+    private Button btnClearLog; // Кнопка для очистки лог-файла
 
     // Сцена окна настроек и объекты Stage и GuessLogic для переключения окон и доступа к логике игры
     private Scene sgo; // сцена окна настроек
@@ -86,8 +91,27 @@ public class GuessOptions {
             setLoHiBnds(); // вызываем метод для применения новых значений
         });
 
+
+        // Задание(4): Создаем CheckBox для включения логирования и кнопку для очистки лог-файла
+        cbLoggingEnabled = new CheckBox("Включить логирование"); // CheckBox для логирования
+        cbLoggingEnabled.setSelected(false); // по умолчанию логирование выключено
+
+        cbLoggingEnabled.setOnAction(eh -> {
+            glb.setLoggingEnabled(cbLoggingEnabled.isSelected()); // обновляем флаг логирования в GuessLogic
+        });
+
+        btnClearLog = new Button("Очистить лог-файл"); // кнопка для очистки лог-файла
+        btnClearLog.setOnAction(eh -> {
+            glb.clearLogFile(); // вызываем метод для очистки лог-файла в GuessLogic
+        });
+
+        logHbox = new HBox(35); // контейнер для чекбокса и для кнопки очистки логирования
+        logHbox.setAlignment(Pos.CENTER); // центрируем
+        logHbox.getChildren().addAll(cbLoggingEnabled, btnClearLog);
+
         // Добавляем все элементы в основной контейнер VBox
-        vbAll.getChildren().addAll(hbLabels, hbTextFields, tfMaxAttemptsLabel, tfMaxAttempts, btnSetOptions);
+        vbAll.getChildren().addAll(hbLabels, hbTextFields, tfMaxAttemptsLabel,
+                tfMaxAttempts, logHbox, btnSetOptions);
 
         // Создаем сцену для окна настроек и задаем размер
         sgo = new Scene(vbAll, 400, 500); // создаем сцену с главным контейнером vbAll
