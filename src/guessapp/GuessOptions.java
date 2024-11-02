@@ -11,148 +11,142 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class GuessOptions {
-    //задание(3)
+    // задание(3)
     private Label tfMaxAttemptsLabel; // текст, который будет выше tfMaxAttempts
-    private TextField tfMaxAttempts; // Поле для ввода максимума попыток
+    private TextField tfMaxAttempts; // Поле для ввода максимального количества попыток
 
     // Главный контейнер VBox и контейнеры HBox для меток и полей ввода
-    private VBox vbAll;
-    private HBox hbLabels, hbTextFields;
+    private VBox vbAll; // основной вертикальный контейнер
+    private HBox hbLabels, hbTextFields; // горизонтальные контейнеры для меток и полей ввода
 
     // Метки и текстовые поля для ввода границ диапазона
-    private Label lblLeftBound, lblRightBound;
-    private TextField tfLeftBound, tfRightBound;
+    private Label lblLeftBound, lblRightBound; // метки для полей ввода границ диапазона
+    private TextField tfLeftBound, tfRightBound; // поля ввода для левой и правой границ
 
     // Кнопка для установки новых значений диапазона
-    private Button btnSetOptions;
+    private Button btnSetOptions; // кнопка для подтверждения установленных значений
 
     // Сцена окна настроек и объекты Stage и GuessLogic для переключения окон и доступа к логике игры
-    private Scene sgo;
-    private Stage sto;
-    private GuessLogic glb;
+    private Scene sgo; // сцена окна настроек
+    private Stage sto; // главное окно приложения
+    private GuessLogic glb; // объект GuessLogic для доступа к основным настройкам игры
 
+    // Конструктор класса GuessOptions
     public GuessOptions(Stage st, GuessLogic gl) {
-        // Сохраняем главное окно Stage и объект GuessLogic для связи с игрой
-        sto = st;
-        glb = gl;
+        sto = st; // сохраняем главное окно для управления сценами
+        glb = gl; // сохраняем объект GuessLogic для доступа к логике игры
 
-        formSceneO(); // Создаем интерфейс окна настроек
+        formSceneO(); // создаем интерфейс окна настроек
     }
 
+    // Метод для создания интерфейса окна настроек
     public void formSceneO() {
-        // Инициализируем главный контейнер VBox с интервалом 30 пикселей
-        vbAll = new VBox(30);
-        vbAll.setAlignment(Pos.CENTER); // Центрируем элементы внутри VBox
+        vbAll = new VBox(30); // основной вертикальный контейнер с интервалом между элементами 30 пикселей
+        vbAll.setAlignment(Pos.CENTER); // центрируем элементы внутри VBox
 
-        // Инициализируем контейнер для меток и добавляем метки для границ диапазона
-        hbLabels = new HBox(35);
-        hbLabels.setAlignment(Pos.CENTER);
-        lblLeftBound = new Label("Левая граница");
-        lblRightBound = new Label("Правая граница");
-        hbLabels.getChildren().addAll(lblLeftBound, lblRightBound);
+        // Создаем контейнер для меток и добавляем метки для границ диапазона
+        hbLabels = new HBox(35); // контейнер для меток левой и правой границ
+        hbLabels.setAlignment(Pos.CENTER); // центрируем метки
+        lblLeftBound = new Label("Левая граница"); // метка для левой границы диапазона
+        lblRightBound = new Label("Правая граница"); // метка для правой границы диапазона
+        hbLabels.getChildren().addAll(lblLeftBound, lblRightBound); // добавляем метки в горизонтальный контейнер
 
-        // Инициализируем контейнер для полей ввода и добавляем сами поля
-        hbTextFields = new HBox(20);
-        hbTextFields.setAlignment(Pos.CENTER);
-        tfLeftBound = new TextField("Введите левую границу");
-        tfRightBound = new TextField("Введите правую границу");
-        //задание(1) задаем предпочтительную ширину
+        // Создаем контейнер для полей ввода и добавляем текстовые поля для границ диапазона
+        hbTextFields = new HBox(20); // контейнер для полей ввода значений границ
+        hbTextFields.setAlignment(Pos.CENTER); // центрируем поля ввода
+        tfLeftBound = new TextField("Введите левую границу"); // поле ввода для левой границы
+        tfRightBound = new TextField("Введите правую границу"); // поле ввода для правой границы
+        // задание(1) задаем предпочтительную ширину
         tfLeftBound.setPrefWidth(155);
         tfRightBound.setPrefWidth(155);
 
+        hbTextFields.getChildren().addAll(tfLeftBound, tfRightBound); // добавляем поля в горизонтальный контейнер
 
-        hbTextFields.getChildren().addAll(tfLeftBound, tfRightBound);
-        //задание(3)
-        tfMaxAttemptsLabel = new Label("Максимальное количество попыток (0 бесконечность)");
-        //задание(3) добавление текстового поля для того,
-        //чтобы можно было задать максимальное количество попыток
-        tfMaxAttempts = new TextField("0");
-        tfMaxAttempts.setMaxWidth(155); // Задание ширины
+        // задание(3) создание метки и текстового поля для количества попыток
+        tfMaxAttemptsLabel = new Label("Максимальное количество попыток (0 - бесконечно)");
+        tfMaxAttempts = new TextField("0"); // по умолчанию 0 для бесконечных попыток
+        tfMaxAttempts.setMaxWidth(155); // задаем ширину для поля
 
-        //задание(3) при нажатии мыши все выделяем
+        // задание(3) при нажатии мыши выделяем весь текст в поле tfMaxAttempts
         tfMaxAttempts.setOnMousePressed(eh -> tfMaxAttempts.selectAll());
 
-        //задание(1) при открытии настроек ждем всю отрисовку, ставим фокус
-        // на левое поле и выделяем текст, который там есть
+        // задание(1) при открытии настроек фокусируемся на поле ввода левой границы
         Platform.runLater(() -> {
             tfLeftBound.requestFocus();
-            tfLeftBound.selectAll();
+            tfLeftBound.selectAll(); // выделяем текст для удобства ввода
         });
 
-        // При клике на текстовые поля весь текст выделяется
+        // При клике на текстовые поля для границ выделяем текст
         tfLeftBound.setOnMousePressed(eh -> tfLeftBound.selectAll());
         tfRightBound.setOnMousePressed(eh -> tfRightBound.selectAll());
 
-        // Создаем кнопку "Установить значения" и устанавливаем действие при нажатии
+        // Создаем кнопку "Установить значения" и задаем обработчик нажатия
         btnSetOptions = new Button("Установить значения");
         btnSetOptions.setOnAction(eh -> {
-            setLoHiBnds(); // Устанавливаем новые значения диапазона
+            setLoHiBnds(); // вызываем метод для применения новых значений
         });
 
-        // Добавляем в главный контейнер VBox все созданные элементы
+        // Добавляем все элементы в основной контейнер VBox
         vbAll.getChildren().addAll(hbLabels, hbTextFields, tfMaxAttemptsLabel, tfMaxAttempts, btnSetOptions);
 
         // Создаем сцену для окна настроек и задаем размер
-        sgo = new Scene(vbAll, 400, 500);
+        sgo = new Scene(vbAll, 400, 500); // создаем сцену с главным контейнером vbAll
     }
 
+    // Метод для получения сцены настроек, чтобы переключиться на неё из GuessLogic
     public Scene getScene() {
-        // Возвращаем сцену настроек, чтобы переключиться на неё из GuessLogic
         return sgo;
     }
 
+    // Метод для установки границ диапазона и максимального числа попыток
     private void setLoHiBnds() {
         try {
-            // Пробуем преобразовать значения левой и правой границ в целые числа
-            int lb = Integer.parseInt(tfLeftBound.getText());
-            int hb = Integer.parseInt(tfRightBound.getText());
-            // задание(3) Пробуем преобразовать значение maxAttempts в целое число
-            int maxAttempts = Integer.parseInt(tfMaxAttempts.getText());
+            // Пробуем преобразовать введенные значения границ и количества попыток в целые числа
+            int lb = Integer.parseInt(tfLeftBound.getText()); // левая граница диапазона
+            int hb = Integer.parseInt(tfRightBound.getText()); // правая граница диапазона
+            int maxAttempts = Integer.parseInt(tfMaxAttempts.getText()); // максимальное количество попыток
 
             // Проверяем, что левая граница меньше правой
             if (lb >= hb) {
-                tfLeftBound.setText("Левая < правая");
+                tfLeftBound.setText("Левая < правая"); // предупреждаем, если левая граница больше правой
                 tfRightBound.setText("Левая < правая");
             } else {
-                // Устанавливаем новые границы диапазона только при корректном вводе
-                glb.setLowHighBound(lb, hb);
-                // задание(3) вызываем метод из класса GuessLogic, чтобы установить ограничение
-                glb.setMaxAttempts(Math.max(0, maxAttempts)); // Установка ограничений на попытки
-                // задание(2) переместили методы сюда, чтобы переключалось только когда нет ошибок
-                sto.setScene(glb.getScene()); // Переход обратно на основную сцену
-                // задание(1) чтобы при переключении обратно был фокус на поле
-                glb.returnFocusToGuessField();
+                // Устанавливаем значения границ диапазона и максимального числа попыток в GuessLogic
+                glb.setLowHighBound(lb, hb); // обновляем диапазон
+                glb.setMaxAttempts(Math.max(0, maxAttempts)); // задание(3) устанавливаем ограничения на попытки
+
+                sto.setScene(glb.getScene()); // задание(2) возвращаемся на основную сцену только при корректных значениях
+                glb.returnFocusToGuessField(); // задание(1) возвращаем фокус на поле ввода в основной сцене
             }
         } catch (NumberFormatException e) {
-            // задание(3) Проверка на некорректные значения в каждом поле
+            // задание(3) проверяем введенные значения и выводим предупреждения, если нецелые числа
             if (!isInteger(tfLeftBound.getText())) {
-                tfLeftBound.setText("Введите целое");
+                tfLeftBound.setText("Введите целое"); // сообщение об ошибке в левой границе
             }
             if (!isInteger(tfRightBound.getText())) {
-                tfRightBound.setText("Введите целое");
+                tfRightBound.setText("Введите целое"); // сообщение об ошибке в правой границе
             }
             if (!isInteger(tfMaxAttempts.getText())) {
-                tfMaxAttempts.setText("Введите целое");
+                tfMaxAttempts.setText("Введите целое"); // сообщение об ошибке в количестве попыток
             }
         }
     }
 
-    //задание(1) метод для переключения фокуса
+    // задание(1) метод для установки фокуса на левое поле ввода
     public void setFocusOnLeftBound() {
         Platform.runLater(() -> {
             tfLeftBound.requestFocus();
-            tfLeftBound.selectAll();
+            tfLeftBound.selectAll(); // выделяем текст
         });
     }
 
-    //задание(3) Метод для проверки, является ли строка целым числом
+    // задание(3) Метод для проверки, является ли строка целым числом
     private boolean isInteger(String str) {
         try {
-            Integer.parseInt(str);
+            Integer.parseInt(str); // проверяем преобразование в целое число
             return true;
         } catch (NumberFormatException e) {
             return false;
         }
     }
-
 }
