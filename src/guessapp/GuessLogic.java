@@ -16,7 +16,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class GuessLogic {
-    // Переменные для диапазона и логики игры
+
     private int lowBound, highBound, guessNum, probNum; // диапазон значений и переменные для текущей попытки и загаданного числа
 
     // задание(3) переменные для отслеживания попыток
@@ -44,6 +44,9 @@ public class GuessLogic {
     private boolean loggingEnabled = false; // флаг для включения/отключения логирования
     // Задание(4): константа для имени лог-файла
     private static final String LOG_FILE_NAME = "src/guessapp/LogGuess.txt"; // имя лог-файла
+
+    // задание(5): переменная для отслеживания прерывания игры
+    private boolean wasInterrupted = false;
 
     // Конструктор класса GuessLogic
     public GuessLogic(Stage s) {
@@ -108,11 +111,18 @@ public class GuessLogic {
 
     // Метод для инициализации игры (используется при запуске и изменении настроек)
     private void initializeGame() {
+        // задание(5): если игра была прервана, выводим сообщение
+        if (wasInterrupted) {
+            lblResult.setText("Игра прервана. Предыдущих попыток: " + currentAttempts);
+            wasInterrupted = false; // сбрасываем флаг прерывания
+        } else {
+            lblResult.setText("Начинаем игру!"); // обновляем сообщение
+        }
+
         generateNumber(); // генерируем новое случайное число
         currentAttempts = 0; // сбрасываем счётчик попыток
         updateAttemptsLabel(); // обновляем метку для оставшихся попыток
         lblBounds.setText("Загадано число от " + lowBound + " до " + highBound); // обновляем метку диапазона
-        lblResult.setText("Начинаем игру!"); // обновляем сообщение
         txtNumber.setText("Введите число"); // очищаем поле ввода
         btnAccept.setDisable(false); // включаем кнопку ввода
         txtNumber.requestFocus(); // ставим фокус на поле ввода
@@ -240,8 +250,32 @@ public class GuessLogic {
 
     // Метод для установки границ диапазона
     public void setLowHighBound(int valLB, int valHB) {
-        lowBound = valLB; // установка новой левой границы диапазона
-        highBound = valHB; // установка новой правой границы диапазона
+        this.lowBound = valLB;
+        this.highBound = valHB;
+    }
+
+    // задание(3) метод для установки максимального количества попыток
+    public void setMaxAttempts(int maxAttempts) {
+        this.maxAttempts = maxAttempts;
+    }
+
+    // Задание(5): Метод для применения настроек и перезапуска игры
+    public void applySettings(int valLB, int valHB, int maxAttempts, boolean loggingEnabled) {
+        // задание(5): если игра не завершена, устанавливаем флаг прерывания
+        if (currentAttempts > 0 && !btnAccept.isDisabled()) {
+            wasInterrupted = true;
+
+            // Задание(5): логируем прерывание игры при изменении настроек
+            if (this.loggingEnabled) {
+                writeLog("Игра прервана из-за изменения настроек после " + currentAttempts + " попыток.");
+            }
+        }
+
+        // Применяем новые настройки
+        setLowHighBound(valLB, valHB);
+        setMaxAttempts(Math.max(0, maxAttempts));
+        setLoggingEnabled(loggingEnabled);
+
         initializeGame(); // Инициализируем игру с новыми настройками
     }
 
@@ -251,14 +285,6 @@ public class GuessLogic {
             txtNumber.requestFocus(); // установка фокуса на поле ввода числа
             txtNumber.selectAll(); // выделение текста в поле ввода
         });
-    }
-
-    // задание(3) метод для установки максимального количества попыток
-    public void setMaxAttempts(int maxAttempts) {
-        this.maxAttempts = maxAttempts; // установка нового значения максимального числа попыток
-        currentAttempts = 0; // сброс счётчика при обновлении
-        updateAttemptsLabel(); // задание(3) обновляем метку оставшихся попыток
-        btnAccept.setDisable(false);
     }
 
     // Метод для обновления метки, отображающей оставшиеся попытки

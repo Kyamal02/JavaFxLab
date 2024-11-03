@@ -62,14 +62,14 @@ public class GuessOptions {
         hbTextFields.setAlignment(Pos.CENTER); // центрируем поля ввода
         tfLeftBound = new TextField(); // поле ввода для левой границы
         tfRightBound = new TextField(); // поле ввода для правой границы
-        tfLeftBound.setPrefWidth(155);
-        tfRightBound.setPrefWidth(155);
+        tfLeftBound.setPrefWidth(70);
+        tfRightBound.setPrefWidth(70);
         hbTextFields.getChildren().addAll(tfLeftBound, tfRightBound); // добавляем поля в горизонтальный контейнер
 
         // задание(3) создание метки и текстового поля для количества попыток
         tfMaxAttemptsLabel = new Label("Максимальное количество попыток (0 - бесконечно)");
         tfMaxAttempts = new TextField(); // поле для ввода количества попыток
-        tfMaxAttempts.setMaxWidth(155); // задаем ширину для поля
+        tfMaxAttempts.setMaxWidth(70); // задаем ширину для поля
 
         // задание(3) при нажатии мыши выделяем весь текст в поле tfMaxAttempts
         tfMaxAttempts.setOnMousePressed(eh -> tfMaxAttempts.selectAll());
@@ -143,9 +143,7 @@ public class GuessOptions {
                 tfRightBound.setText("Левая < правая");
             } else {
                 // Устанавливаем значения границ диапазона и максимального числа попыток в GuessLogic
-                glb.setLowHighBound(lb, hb); // обновляем диапазон
-                glb.setMaxAttempts(Math.max(0, maxAttempts)); // задание(3) устанавливаем ограничения на попытки
-                glb.setLoggingEnabled(cbLoggingEnabled.isSelected()); // устанавливаем логирование
+                glb.applySettings(lb, hb, maxAttempts, cbLoggingEnabled.isSelected()); // задание(5)
                 sto.setScene(glb.getScene()); // возвращаемся на основную сцену только при корректных значениях
                 glb.returnFocusToGuessField(); // возвращаем фокус на поле ввода в основной сцене
             }
