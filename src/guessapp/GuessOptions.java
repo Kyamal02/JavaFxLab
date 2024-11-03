@@ -116,19 +116,6 @@ public class GuessOptions {
         sgo = new Scene(vbAll, 400, 500); // создаем сцену с главным контейнером vbAll
     }
 
-    // Метод для получения сцены настроек, чтобы переключиться на неё из GuessLogic
-    public Scene getScene() {
-        return sgo;
-    }
-
-    // Метод для обновления полей ввода текущими настройками
-    public void updateFields() {
-        tfLeftBound.setText(String.valueOf(glb.getLowBound()));
-        tfRightBound.setText(String.valueOf(glb.getHighBound()));
-        tfMaxAttempts.setText(String.valueOf(glb.getMaxAttempts()));
-        cbLoggingEnabled.setSelected(glb.isLoggingEnabled());
-    }
-
     // Метод для установки границ диапазона и максимального числа попыток
     private void setLoHiBnds() {
         try {
@@ -160,6 +147,20 @@ public class GuessOptions {
             }
         }
     }
+
+    // Метод для получения сцены настроек, чтобы переключиться на неё из GuessLogic
+    public Scene getScene() {
+        return sgo;
+    }
+
+    // Метод для обновления полей ввода текущими настройками
+    public void updateFields() {
+        tfLeftBound.setText(String.valueOf(glb.getLowBound()));
+        tfRightBound.setText(String.valueOf(glb.getHighBound()));
+        tfMaxAttempts.setText(String.valueOf(glb.getMaxAttempts()));
+        cbLoggingEnabled.setSelected(glb.isLoggingEnabled());
+    }
+
 
     // задание(1) метод для установки фокуса на левое поле ввода
     public void setFocusOnLeftBound() {

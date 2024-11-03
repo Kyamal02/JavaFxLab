@@ -213,10 +213,6 @@ public class GuessLogic {
         return number < lowBound || number > highBound; // проверка на соответствие диапазону
     }
 
-    // Метод для генерации нового случайного числа в диапазоне
-    public void generateNumber() {
-        guessNum = rnd.nextInt(highBound - lowBound + 1) + lowBound; // случайное число в пределах lowBound и highBound
-    }
 
     // Метод для проверки введенного числа
     String checkNumber() {
@@ -242,10 +238,37 @@ public class GuessLogic {
         return verdict; // возвращаем вердикт для логирования
     }
 
+    // Метод для обновления метки, отображающей оставшиеся попытки
+    private void updateAttemptsLabel() { // задание(3) обновляем текст метки попыток
+        if (maxAttempts > 0) {
+            lblAttempts.setText("Осталось попыток: " + (maxAttempts - currentAttempts));
+        } else {
+            lblAttempts.setText("Осталось попыток: бесконечность");
+        }
+    }
+
+    // Задание(4): Метод для записи в лог-файл
+    private void writeLog(String message) {
+        if (loggingEnabled) {
+            try {
+                PrintWriter writer = new PrintWriter(new FileWriter(LOG_FILE_NAME, true));
+                writer.println(message);
+                writer.close();
+            } catch (IOException e) {
+                System.out.println("Ошибка при записи в лог-файл: " + e.getMessage());
+            }
+        }
+    }
+
     // Метод для возвращения сцены игры
     public Scene getScene() {
         // Возвращаем сцену игры, чтобы переключиться на неё из окна настроек
         return sgl;
+    }
+
+    // Метод для генерации нового случайного числа в диапазоне
+    public void generateNumber() {
+        guessNum = rnd.nextInt(highBound - lowBound + 1) + lowBound; // случайное число в пределах lowBound и highBound
     }
 
     // Метод для установки границ диапазона
@@ -287,14 +310,6 @@ public class GuessLogic {
         });
     }
 
-    // Метод для обновления метки, отображающей оставшиеся попытки
-    private void updateAttemptsLabel() { // задание(3) обновляем текст метки попыток
-        if (maxAttempts > 0) {
-            lblAttempts.setText("Осталось попыток: " + (maxAttempts - currentAttempts));
-        } else {
-            lblAttempts.setText("Осталось попыток: бесконечность");
-        }
-    }
 
     // Задание(4): Метод для установки флага логирования
     public void setLoggingEnabled(boolean enabled) {
@@ -315,18 +330,6 @@ public class GuessLogic {
         }
     }
 
-    // Задание(4): Метод для записи в лог-файл
-    private void writeLog(String message) {
-        if (loggingEnabled) {
-            try {
-                PrintWriter writer = new PrintWriter(new FileWriter(LOG_FILE_NAME, true));
-                writer.println(message);
-                writer.close();
-            } catch (IOException e) {
-                System.out.println("Ошибка при записи в лог-файл: " + e.getMessage());
-            }
-        }
-    }
 
     public boolean isLoggingEnabled() {
         return loggingEnabled;
