@@ -15,5 +15,6 @@ public class GuessApp extends Application {
         // GuessLogic будет управлять логикой игры и интерфейсом
         GuessLogic glw = new GuessLogic(stage);
 
+        stage.setResizable(false); // Запрещаем изменение размеров окна
     }
 }

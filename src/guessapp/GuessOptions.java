@@ -18,7 +18,7 @@ public class GuessOptions {
 
     // Главный контейнер VBox и контейнеры HBox для меток и полей ввода
     private VBox vbAll; // основной вертикальный контейнер
-    private HBox hbLabels, hbTextFields, logHbox; // горизонтальные контейнеры для меток и полей ввода
+    private HBox hbLabels, hbTextFields, logHbox, buttonsHbox; // горизонтальные контейнеры для меток и полей ввода
 
     // Метки и текстовые поля для ввода границ диапазона
     private Label lblLeftBound, lblRightBound; // метки для полей ввода границ диапазона
@@ -26,6 +26,7 @@ public class GuessOptions {
 
     // Кнопка для установки новых значений диапазона
     private Button btnSetOptions; // кнопка для подтверждения установленных значений
+    private Button btnCancel; // задание(5) кнопка "Отмена"
 
     // Задание(4): Переменные для функциональности логирования
     private CheckBox cbLoggingEnabled; // CheckBox для включения/выключения логирования
@@ -59,27 +60,19 @@ public class GuessOptions {
         // Создаем контейнер для полей ввода и добавляем текстовые поля для границ диапазона
         hbTextFields = new HBox(20); // контейнер для полей ввода значений границ
         hbTextFields.setAlignment(Pos.CENTER); // центрируем поля ввода
-        tfLeftBound = new TextField("Введите левую границу"); // поле ввода для левой границы
-        tfRightBound = new TextField("Введите правую границу"); // поле ввода для правой границы
-        // задание(1) задаем предпочтительную ширину
+        tfLeftBound = new TextField(); // поле ввода для левой границы
+        tfRightBound = new TextField(); // поле ввода для правой границы
         tfLeftBound.setPrefWidth(155);
         tfRightBound.setPrefWidth(155);
-
         hbTextFields.getChildren().addAll(tfLeftBound, tfRightBound); // добавляем поля в горизонтальный контейнер
 
         // задание(3) создание метки и текстового поля для количества попыток
         tfMaxAttemptsLabel = new Label("Максимальное количество попыток (0 - бесконечно)");
-        tfMaxAttempts = new TextField("0"); // по умолчанию 0 для бесконечных попыток
+        tfMaxAttempts = new TextField(); // поле для ввода количества попыток
         tfMaxAttempts.setMaxWidth(155); // задаем ширину для поля
 
         // задание(3) при нажатии мыши выделяем весь текст в поле tfMaxAttempts
         tfMaxAttempts.setOnMousePressed(eh -> tfMaxAttempts.selectAll());
-
-        // задание(1) при открытии настроек фокусируемся на поле ввода левой границы
-        Platform.runLater(() -> {
-            tfLeftBound.requestFocus();
-            tfLeftBound.selectAll(); // выделяем текст для удобства ввода
-        });
 
         // При клике на текстовые поля для границ выделяем текст
         tfLeftBound.setOnMousePressed(eh -> tfLeftBound.selectAll());
@@ -91,14 +84,16 @@ public class GuessOptions {
             setLoHiBnds(); // вызываем метод для применения новых значений
         });
 
+        // задание(5)
+        btnCancel = new Button("Отмена");
+        btnCancel.setOnAction(eh -> {
+            // Возвращаемся на основную сцену без изменений
+            sto.setScene(glb.getScene()); // возвращаемся на основную сцену
+            glb.returnFocusToGuessField(); // возвращаем фокус на поле ввода
+        });
 
         // Задание(4): Создаем CheckBox для включения логирования и кнопку для очистки лог-файла
         cbLoggingEnabled = new CheckBox("Включить логирование"); // CheckBox для логирования
-        cbLoggingEnabled.setSelected(false); // по умолчанию логирование выключено
-
-        cbLoggingEnabled.setOnAction(eh -> {
-            glb.setLoggingEnabled(cbLoggingEnabled.isSelected()); // обновляем флаг логирования в GuessLogic
-        });
 
         btnClearLog = new Button("Очистить лог-файл"); // кнопка для очистки лог-файла
         btnClearLog.setOnAction(eh -> {
@@ -109,9 +104,13 @@ public class GuessOptions {
         logHbox.setAlignment(Pos.CENTER); // центрируем
         logHbox.getChildren().addAll(cbLoggingEnabled, btnClearLog);
 
+        buttonsHbox = new HBox(20);
+        buttonsHbox.setAlignment(Pos.CENTER);
+        buttonsHbox.getChildren().addAll(btnSetOptions, btnCancel);
+
         // Добавляем все элементы в основной контейнер VBox
         vbAll.getChildren().addAll(hbLabels, hbTextFields, tfMaxAttemptsLabel,
-                tfMaxAttempts, logHbox, btnSetOptions);
+                tfMaxAttempts, logHbox, buttonsHbox);
 
         // Создаем сцену для окна настроек и задаем размер
         sgo = new Scene(vbAll, 400, 500); // создаем сцену с главным контейнером vbAll
@@ -120,6 +119,14 @@ public class GuessOptions {
     // Метод для получения сцены настроек, чтобы переключиться на неё из GuessLogic
     public Scene getScene() {
         return sgo;
+    }
+
+    // Метод для обновления полей ввода текущими настройками
+    public void updateFields() {
+        tfLeftBound.setText(String.valueOf(glb.getLowBound()));
+        tfRightBound.setText(String.valueOf(glb.getHighBound()));
+        tfMaxAttempts.setText(String.valueOf(glb.getMaxAttempts()));
+        cbLoggingEnabled.setSelected(glb.isLoggingEnabled());
     }
 
     // Метод для установки границ диапазона и максимального числа попыток
@@ -138,9 +145,9 @@ public class GuessOptions {
                 // Устанавливаем значения границ диапазона и максимального числа попыток в GuessLogic
                 glb.setLowHighBound(lb, hb); // обновляем диапазон
                 glb.setMaxAttempts(Math.max(0, maxAttempts)); // задание(3) устанавливаем ограничения на попытки
-
-                sto.setScene(glb.getScene()); // задание(2) возвращаемся на основную сцену только при корректных значениях
-                glb.returnFocusToGuessField(); // задание(1) возвращаем фокус на поле ввода в основной сцене
+                glb.setLoggingEnabled(cbLoggingEnabled.isSelected()); // устанавливаем логирование
+                sto.setScene(glb.getScene()); // возвращаемся на основную сцену только при корректных значениях
+                glb.returnFocusToGuessField(); // возвращаем фокус на поле ввода в основной сцене
             }
         } catch (NumberFormatException e) {
             // задание(3) проверяем введенные значения и выводим предупреждения, если нецелые числа

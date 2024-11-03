@@ -1,6 +1,5 @@
 package guessapp;
 
-import java.io.BufferedReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -89,6 +88,7 @@ public class GuessLogic {
         btnOptions = new Button("Настройки");
         btnOptions.setOnAction(eh -> {
             stg.setScene(gow.getScene()); // переключаемся на сцену с настройками
+            gow.updateFields(); // обновляем поля ввода текущими настройками
             gow.setFocusOnLeftBound(); // фокус на поле ввода левой границы диапазона
         });
 
@@ -156,7 +156,7 @@ public class GuessLogic {
             }
 
             // задание(3) проверка на исчерпание попыток
-            if (maxAttempts > 0 && currentAttempts >= maxAttempts) { // если количество попыток достигло предела и число не угадано
+            if (maxAttempts > 0 && currentAttempts >= maxAttempts && probNum != guessNum) { // если количество попыток достигло предела и число не угадано
                 btnAccept.setDisable(true); // отключаем кнопку после исчерпания попыток
                 lblResult.setText("Попытки закончились! Число не угадано."); // отображаем сообщение об окончании попыток
 
@@ -272,20 +272,15 @@ public class GuessLogic {
 
     // Задание(4): Метод для установки флага логирования
     public void setLoggingEnabled(boolean enabled) {
-        if (enabled) {
+        if (enabled != loggingEnabled) {
             loggingEnabled = enabled;
-            writeLog("Логирование включено.");
-        } else {
-            writeLog("Логирование отключено.");
-            loggingEnabled = enabled; // Затем отключаем
+            writeLog("Логирование " + (enabled ? "включено" : "отключено") + ".");
         }
-        loggingEnabled = enabled; // Устанавливаем логирование в конечное значение
     }
 
     // Задание(4): Метод для очистки лог-файла
     public void clearLogFile() {
         try {
-            // PrintWriter по умолчанию перезаписывает
             PrintWriter writer = new PrintWriter(new FileWriter(LOG_FILE_NAME));
             writer.print(""); // очищаем содержимое файла
             writer.close();
@@ -298,7 +293,6 @@ public class GuessLogic {
     private void writeLog(String message) {
         if (loggingEnabled) {
             try {
-                // открываем файл в режиме добавления
                 PrintWriter writer = new PrintWriter(new FileWriter(LOG_FILE_NAME, true));
                 writer.println(message);
                 writer.close();
@@ -307,4 +301,22 @@ public class GuessLogic {
             }
         }
     }
+
+    public boolean isLoggingEnabled() {
+        return loggingEnabled;
+    }
+
+    // Геттеры для текущих настроек
+    public int getLowBound() {
+        return lowBound;
+    }
+
+    public int getHighBound() {
+        return highBound;
+    }
+
+    public int getMaxAttempts() {
+        return maxAttempts;
+    }
+
 }
